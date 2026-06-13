@@ -1,0 +1,40 @@
+name: worldcup_clip
+description: Authorized AI clip pipeline for yt-dlp, FFmpeg, ASR, render, and QC.
+working_dir: ..
+
+params:
+  JOB_CONFIG: config/jobs/example_job.yaml
+
+steps:
+  - name: safety_check
+    run: powershell -ExecutionPolicy Bypass -File scripts/check_safe_to_publish.ps1
+
+  - name: download
+    run: powershell -ExecutionPolicy Bypass -File scripts/download.ps1 -JobConfig ${JOB_CONFIG}
+    depends:
+      - safety_check
+
+  - name: extract_audio
+    run: powershell -ExecutionPolicy Bypass -File scripts/extract_audio.ps1 -JobConfig ${JOB_CONFIG}
+    depends:
+      - download
+
+  - name: transcribe
+    run: python scripts/transcribe.py --job-config ${JOB_CONFIG}
+    depends:
+      - extract_audio
+
+  - name: clip_plan
+    run: python scripts/build_clip_plan.py --job-config ${JOB_CONFIG}
+    depends:
+      - transcribe
+
+  - name: render
+    run: powershell -ExecutionPolicy Bypass -File scripts/render.ps1 -JobConfig ${JOB_CONFIG}
+    depends:
+      - clip_plan
+
+  - name: qc_report
+    run: python scripts/qc_report.py --job-config ${JOB_CONFIG}
+    depends:
+      - render

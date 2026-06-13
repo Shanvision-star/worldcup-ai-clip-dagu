@@ -1,0 +1,9 @@
+rights:
+  - id: sample_authorized_video
+    source_owner: "Example owner"
+    license: "Replace with CC BY, CC0, written permission, or own media"
+    permission_url: "https://example.com/permission"
+    commercial_use: false
+    attribution_required: true
+    notes: "Do not enable until permission has been verified."
+

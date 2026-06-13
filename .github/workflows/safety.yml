@@ -1,0 +1,15 @@
+name: Safety
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  safe-to-publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check public repository safety
+        shell: pwsh
+        run: .\scripts\check_safe_to_publish.ps1
+

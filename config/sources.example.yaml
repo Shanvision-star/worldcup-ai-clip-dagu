@@ -1,0 +1,8 @@
+sources:
+  - id: sample_authorized_video
+    type: youtube
+    url: "https://www.youtube.com/watch?v=REPLACE_WITH_AUTHORIZED_SAMPLE"
+    title: "Authorized sample"
+    rights_id: sample_authorized_video
+    enabled: false
+

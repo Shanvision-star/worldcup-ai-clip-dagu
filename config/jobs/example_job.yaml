@@ -1,0 +1,21 @@
+job:
+  id: "example_local_only"
+  title: "Example local-only job"
+  source:
+    type: "local"
+    url: ""
+    local_file: "data/raw/example.mp4"
+  rights:
+    status: "unverified"
+    rights_id: "replace_me"
+    source_owner: ""
+    permission_url: ""
+    attribution_required: true
+  output:
+    slug: "example-local-only"
+    make_16x9: true
+    make_9x16: true
+  review:
+    require_human_approval: true
+    notes: "Replace this file with a local job file that is not committed."
+

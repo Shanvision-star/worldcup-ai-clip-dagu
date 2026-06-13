@@ -1,0 +1,53 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+secrets.*
+credentials.*
+token.*
+
+# Generated media and workflow state
+data/**
+!data/.gitkeep
+config/jobs/local_*.yaml
+config/jobs/*.local.yaml
+*.mp4
+*.mkv
+*.mov
+*.webm
+*.mp3
+*.wav
+*.m4a
+*.srt
+*.vtt
+
+# Local tools, installers, and models
+tools/**
+installers/**
+models/**
+
+# Dagu/runtime/cache
+.dagu/**
+workflows/souls/**
+logs/**
+tmp/**
+cache/**
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

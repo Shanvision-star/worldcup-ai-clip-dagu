@@ -1,0 +1,16 @@
+profiles:
+  bilibili_16x9:
+    aspect: "16:9"
+    width: 1920
+    height: 1080
+    video_codec: "libx264"
+    audio_codec: "aac"
+    crf: 20
+  short_video_9x16:
+    aspect: "9:16"
+    width: 1080
+    height: 1920
+    video_codec: "libx264"
+    audio_codec: "aac"
+    crf: 22
+
