@@ -1,4 +1,4 @@
-"""字幕样式工具：把 SRT 转成可控字号、颜色和开场 Hook 的 ASS 字幕。"""
+"""字幕样式工具：把字幕转成可控字号、颜色和双语布局的 ASS 字幕。"""
 
 from __future__ import annotations
 
@@ -37,6 +37,34 @@ def parse_srt(content: str) -> list[CaptionCue]:
         if text_lines:
             cues.append(CaptionCue(start=start, end=end, lines=text_lines))
     return cues
+
+
+def parse_vtt(content: str) -> list[CaptionCue]:
+    normalized = content.replace("\ufeff", "")
+    lines = []
+    for line in normalized.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped == "WEBVTT" or stripped.startswith(("Kind:", "Language:", "NOTE")):
+            lines.append("")
+            continue
+        if "-->" in stripped:
+            stripped = stripped.replace(".", ",")
+            stripped = re.sub(r"\s+align:[^\s]+|\s+position:[^\s]+|\s+line:[^\s]+|\s+size:[^\s]+", "", stripped)
+        lines.append(stripped)
+    return parse_srt("\n".join(lines))
+
+
+def merge_bilingual_cues(primary: list[CaptionCue], secondary: list[CaptionCue]) -> list[CaptionCue]:
+    if not secondary:
+        return primary
+
+    merged: list[CaptionCue] = []
+    for index, cue in enumerate(primary):
+        secondary_lines: tuple[str, ...] = ()
+        if index < len(secondary):
+            secondary_lines = secondary[index].lines
+        merged.append(CaptionCue(start=cue.start, end=cue.end, lines=cue.lines + secondary_lines))
+    return merged
 
 
 def srt_time_to_ass(value: str) -> str:

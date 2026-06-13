@@ -1,11 +1,11 @@
-"""字幕准备入口：根据任务配置生成带样式和开场 Hook 的 ASS 字幕文件。"""
+"""字幕准备入口：根据任务配置生成双语 ASS 字幕文件。"""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from caption_utils import build_ass_document, parse_srt
+from caption_utils import build_ass_document, merge_bilingual_cues, parse_srt, parse_vtt
 
 
 def read_simple_value(config_path: Path, key: str) -> str:
@@ -30,6 +30,20 @@ def read_float(config_path: Path, key: str, default: float) -> float:
     return float(raw)
 
 
+def load_cues(path: Path):
+    content = path.read_text(encoding="utf-8")
+    if path.suffix.lower() == ".vtt":
+        return parse_vtt(content)
+    return parse_srt(content)
+
+
+def first_existing(paths: list[Path]) -> Path | None:
+    for path in paths:
+        if path.exists():
+            return path
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--job-config", default="config/jobs/example_job.yaml")
@@ -42,10 +56,34 @@ def main() -> int:
     srt_path = transcripts_dir / f"{slug}.srt"
     ass_path = transcripts_dir / f"{slug}.ass"
 
-    if not srt_path.exists():
-        raise FileNotFoundError(f"SRT transcript not found: {srt_path}")
+    english_path = first_existing(
+        [
+            transcripts_dir / f"{slug}.en.srt",
+            transcripts_dir / f"{slug}.en.vtt",
+        ]
+    )
+    chinese_path = first_existing(
+        [
+            transcripts_dir / f"{slug}.zh-Hans.srt",
+            transcripts_dir / f"{slug}.zh-Hans.vtt",
+            transcripts_dir / f"{slug}.zh.srt",
+            transcripts_dir / f"{slug}.zh.vtt",
+        ]
+    )
 
-    cues = parse_srt(srt_path.read_text(encoding="utf-8"))
+    if english_path:
+        cues = load_cues(english_path)
+        if chinese_path:
+            cues = merge_bilingual_cues(cues, load_cues(chinese_path))
+            print(f"Using bilingual captions: {english_path.name} + {chinese_path.name}")
+        else:
+            print(f"Using English captions only: {english_path.name}")
+    else:
+        if not srt_path.exists():
+            raise FileNotFoundError(f"SRT transcript not found: {srt_path}")
+        cues = load_cues(srt_path)
+        print(f"Using fallback captions: {srt_path.name}")
+
     ass = build_ass_document(
         cues,
         font_size=read_int(config_path, "subtitle_font_size", 52),

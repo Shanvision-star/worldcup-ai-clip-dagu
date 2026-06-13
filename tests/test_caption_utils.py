@@ -3,7 +3,9 @@ import unittest
 from scripts.caption_utils import (
     ass_color_from_hex,
     build_ass_document,
+    merge_bilingual_cues,
     parse_srt,
+    parse_vtt,
 )
 
 
@@ -36,6 +38,38 @@ class CaptionUtilsTest(unittest.TestCase):
         self.assertIn("Dialogue: 0,0:00:00.00,0:00:02.50,Hook", ass)
         self.assertIn("3秒看懂这个瞬间", ass)
         self.assertIn("English line\\N中文字幕", ass)
+
+    def test_merges_english_and_chinese_cues_without_hook(self):
+        english = parse_srt(
+            "1\n"
+            "00:00:01,000 --> 00:00:03,000\n"
+            "Watch the run.\n"
+        )
+        chinese = parse_srt(
+            "1\n"
+            "00:00:01,200 --> 00:00:03,200\n"
+            "看这次跑位。\n"
+        )
+
+        merged = merge_bilingual_cues(english, chinese)
+        ass = build_ass_document(merged, hook_text="")
+
+        self.assertEqual(merged[0].start, "00:00:01,000")
+        self.assertEqual(merged[0].end, "00:00:03,000")
+        self.assertEqual(merged[0].lines, ("Watch the run.", "看这次跑位。"))
+        self.assertNotIn(",Hook,", ass)
+        self.assertIn("Watch the run.\\N看这次跑位。", ass)
+
+    def test_parses_webvtt_cues(self):
+        cues = parse_vtt(
+            "WEBVTT\n\n"
+            "00:00:01.000 --> 00:00:02.500\n"
+            "Hello world\n"
+        )
+
+        self.assertEqual(cues[0].start, "00:00:01,000")
+        self.assertEqual(cues[0].end, "00:00:02,500")
+        self.assertEqual(cues[0].lines, ("Hello world",))
 
 
 if __name__ == "__main__":
