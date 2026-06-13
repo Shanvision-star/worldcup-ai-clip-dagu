@@ -16,6 +16,10 @@ $workflows = Join-Path $Root 'workflows'
 $daguHome = Join-Path $Root '.dagu'
 New-Item -ItemType Directory -Force -Path $daguHome | Out-Null
 
+# 覆盖机器上的全局 Dagu 环境变量，避免 UI 误读其他项目的 DAG 目录。
+$env:DAGU_HOME = $daguHome
+$env:DAGU_DAGS_DIR = $workflows
+
 $configPath = Join-Path $daguHome 'local-config.yaml'
 $authMode = if ($KeepAuth) { 'builtin' } else { 'none' }
 $normalizedWorkflows = $workflows -replace '\\', '/'

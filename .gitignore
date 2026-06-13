@@ -34,6 +34,7 @@ models/**
 # Dagu/runtime/cache
 .dagu/**
 workflows/souls/**
+workflows/.dag.index
 logs/**
 tmp/**
 cache/**
