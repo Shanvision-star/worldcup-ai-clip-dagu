@@ -12,6 +12,16 @@ function Read-SimpleYamlValue {
     return (($line.Line -replace "^\s*$Key\s*:\s*", '').Trim().Trim('"').Trim("'"))
 }
 
+function Convert-ToFfmpegFilterPath {
+    param([string]$Path, [string]$Root)
+    $full = [System.IO.Path]::GetFullPath($Path)
+    $rootFull = [System.IO.Path]::GetFullPath($Root).TrimEnd('\') + '\'
+    if ($full.StartsWith($rootFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return ($full.Substring($rootFull.Length) -replace '\\', '/')
+    }
+    return (($full -replace '\\', '/') -replace ':', '\:')
+}
+
 Push-Location $Root
 try {
     $configPath = Resolve-Path $JobConfig
@@ -27,14 +37,20 @@ try {
     New-Item -ItemType Directory -Force -Path $renderDir | Out-Null
     $ffmpeg = Join-Path $Root 'tools\ffmpeg\bin\ffmpeg.exe'
     if (-not (Test-Path $ffmpeg)) { throw 'ffmpeg.exe not found. Run scripts/bootstrap.ps1 first.' }
+    $captionFile = Join-Path $Root "data\transcripts\$slug.ass"
+    $captionFilter = ''
+    if (Test-Path $captionFile) {
+        $captionPath = Convert-ToFfmpegFilterPath -Path $captionFile -Root $Root
+        $captionFilter = ",subtitles='$captionPath'"
+        Write-Host "Burning styled captions from data\transcripts\$slug.ass"
+    }
 
     $out16x9 = Join-Path $renderDir "$slug-16x9.mp4"
-    & $ffmpeg -y -i $input.FullName -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 160k $out16x9
+    & $ffmpeg -y -i $input.FullName -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2$captionFilter" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 160k $out16x9
 
     $out9x16 = Join-Path $renderDir "$slug-9x16.mp4"
-    & $ffmpeg -y -i $input.FullName -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" -c:v libx264 -crf 22 -preset veryfast -c:a aac -b:a 160k $out9x16
+    & $ffmpeg -y -i $input.FullName -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920$captionFilter" -c:v libx264 -crf 22 -preset veryfast -c:a aac -b:a 160k $out9x16
 }
 finally {
     Pop-Location
 }
-

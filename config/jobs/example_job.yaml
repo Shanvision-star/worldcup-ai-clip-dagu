@@ -15,7 +15,16 @@ job:
     slug: "example-local-only"
     make_16x9: true
     make_9x16: true
+  captions:
+    subtitle_font_size: 52
+    subtitle_primary_color: "#FFFFFF"
+    subtitle_outline_color: "#000000"
+    subtitle_outline: 3
+    subtitle_margin_v: 110
+    hook_text: ""
+    hook_duration_sec: 3
+    hook_font_size: 68
+    hook_color: "#FFD400"
   review:
     require_human_approval: true
     notes: "Replace this file with a local job file that is not committed."
-

@@ -24,10 +24,15 @@ steps:
     depends:
       - extract_audio
 
+  - name: prepare_captions
+    run: python scripts/prepare_captions.py --job-config ${JOB_CONFIG}
+    depends:
+      - transcribe
+
   - name: clip_plan
     run: python scripts/build_clip_plan.py --job-config ${JOB_CONFIG}
     depends:
-      - transcribe
+      - prepare_captions
 
   - name: render
     run: powershell -ExecutionPolicy Bypass -File scripts/render.ps1 -JobConfig ${JOB_CONFIG}

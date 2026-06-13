@@ -99,3 +99,23 @@ Copy-Item .\config\jobs\example_job.yaml .\config\jobs\local_job.yaml
 7. Dagu 中每步状态可见。
 
 真实平台发布、真实 LLM/ASR 调用和声音克隆都属于受控 smoke，不进入默认 CI。
+
+## Caption And Hook
+
+`transcribe` 生成 `data\transcripts\<slug>.srt`，`prepare_captions` 会把它转换成可控样式的 `ASS` 字幕，`render` 会把字幕烧录进 16:9 和 9:16 成品。
+
+任务配置可以设置：
+
+```yaml
+subtitle_font_size: 52
+subtitle_primary_color: "#FFFFFF"
+subtitle_outline_color: "#000000"
+subtitle_outline: 3
+subtitle_margin_v: 110
+hook_text: "先看细节：这个瞬间为什么值得拆解？"
+hook_duration_sec: 3
+hook_font_size: 68
+hook_color: "#FFD400"
+```
+
+Hook 只能帮助建立解说/分析视角，不能替代授权。涉及第三方素材时，仍需确认版权、肖像、音乐和平台规则。
